@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Media Display with Widgets</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+        .media-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .widget {
+            width: 300px;
+            height: 200px;
+            border: 1px solid #ccc;
+            position: relative;
+            overflow: hidden;
+        }
+        .widget iframe, .widget img, .widget video {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .widget-title {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            width: 100%;
+            padding: 5px;
+            text-align: center;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <label for="searchQuery">Search URL:</label>
+        <input type="text" id="searchQuery" placeholder="Enter URL to search">
+        <button onclick="searchAndDisplay()">Search & Display</button>
+        
+        <label for="widgetSelect">Select Widget:</label>
+        <select id="widgetSelect">
+            <option value="widget1">Widget 1</option>
+            <option value="widget2">Widget 2</option>
+            <option value="widget3">Widget 3</option>
+        </select>
+        
+        <div id="errorMessage" class="error"></div>
+    </div>
+
+    <div class="media-container">
+        <div id="widget1" class="widget">
+            <div class="widget-title">Widget 1</div>
+        </div>
+        <div id="widget2" class="widget">
+            <div class="widget-title">Widget 2</div>
+        </div>
+        <div id="widget3" class="widget">
+            <div class="widget-title">Widget 3</div>
+        </div>
+    </div>
+
+    <script>
+        function searchAndDisplay() {
+            const url = document.getElementById('searchQuery').value;
+            const selectedWidgetId = document.getElementById('widgetSelect').value;
+            const selectedWidget = document.getElementById(selectedWidgetId);
+            const errorMessage = document.getElementById('errorMessage');
+            
+            // Clear previous content
+            clearWidget(selectedWidget);
+
+            // Check if a valid URL is provided
+            if (!url || !selectedWidgetId) {
+                errorMessage.textContent = 'Please enter a URL and select a widget.';
+                return;
+            }
+            
+            // Validate URL
+            try {
+                new URL(url); // Validate URL format
+            } catch (e) {
+                errorMessage.textContent = 'Invalid URL format.';
+                return;
+            }
+            
+            // Determine content type
+            const contentType = getContentType(url);
+            
+            // Display content based on type
+            switch (contentType) {
+                case 'iframe':
+                    displayIframe(url, selectedWidget);
+                    break;
+                case 'image':
+                    displayImage(url, selectedWidget);
+                    break;
+                case 'video':
+                    displayVideo(url, selectedWidget);
+                    break;
+                default:
+                    errorMessage.textContent = 'Unsupported content type.';
+            }
+        }
+
+        function clearWidget(widget) {
+            // Remove existing content
+            while (widget.firstChild) {
+                widget.removeChild(widget.firstChild);
+            }
+        }
+
+        function getContentType(url) {
+            // Basic heuristic to determine content type based on file extension or URL pattern
+            if (url.match(/\.(jpg|jpeg|png|gif)$/)) return 'image';
+            if (url.match(/\.(mp4|webm)$/)) return 'video';
+            return 'iframe'; // Default to iframe for unknown types
+        }
+
+        function displayIframe(url, widget) {
+            const iframe = document.createElement('iframe');
+            iframe.src = url;
+            widget.appendChild(iframe);
+        }
+
+        function displayImage(url, widget) {
+            const img = document.createElement('img');
+            img.src = url;
+            widget.appendChild(img);
+        }
+
+        function displayVideo(url, widget) {
+            const video = document.createElement('video');
+            video.controls = true;
+            const source = document.createElement('source');
+            source.src = url;
+            source.type = 'video/mp4'; // Default to MP4; adjust as needed
+            video.appendChild(source);
+            widget.appendChild(video);
+        }
+    </script>
+</body>
+</html>
